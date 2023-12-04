@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net5.0;net6.0;net7.0;net8.0</TargetFrameworks>
+    <SignAssembly>False</SignAssembly>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageId>SimpLog.Database.MSSQL</PackageId>
+    <Title>SimpLog.Database.MSSQL</Title>
+    <Version>0.0.1-alpha1</Version>
+    <Authors>Georgi Chekanov</Authors>
+    <Company>Georgi Chekanov</Company>
+    <Product>SimpLog</Product>
+    <Description>Log from server into MSSQL database.</Description>
+    <Copyright>Copyright (c) Georgi Chekanov 2023</Copyright>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>log, mssql log, simple log</PackageTags>
+    <PackageReleaseNotes>- separated functionality for MSSQL from SimpLog</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
