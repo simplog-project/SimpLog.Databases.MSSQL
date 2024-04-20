@@ -5,18 +5,19 @@
     <SignAssembly>False</SignAssembly>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>SimpLog.Database.MSSQL</PackageId>
-    <Title>SimpLog.Database.MSSQL</Title>
-    <Version>0.0.1-alpha1</Version>
+    <Title>SimpLog.Databases.MSSQL</Title>
+    <Version>1.0.1</Version>
     <Authors>Georgi Chekanov</Authors>
     <Company>Georgi Chekanov</Company>
     <Product>SimpLog</Product>
     <Description>Log from server into MSSQL database.</Description>
-    <Copyright>Copyright (c) Georgi Chekanov 2023</Copyright>
+    <Copyright>Copyright (c) Georgi Chekanov 2024</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>log, mssql log, simple log</PackageTags>
-    <PackageReleaseNotes>- separated functionality for MSSQL from SimpLog</PackageReleaseNotes>
+    <PackageReleaseNotes>- separated functionality for logging into MSSQL database</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/simplog-project/SimpLog.Databases.MSSQL</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

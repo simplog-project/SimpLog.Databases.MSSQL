@@ -29,42 +29,7 @@ namespace SimpLog.Databases.MSSQL.Models
         }
     }
 
-    internal enum Global_Database_Type
-    {
-        [Description("MSSql")]
-        MSSql,
-        [Description("MySql")]
-        MySql,
-        [Description("MariaDb")]
-        MariaDb,
-        [Description("Postgre")]
-        PostgreSql,
-        [Description("Oracle")]
-        Oracle,
-        [Description("MongoDb")]
-        MongoDb
-    }
-
-    public enum FileSaveType
-    {
-        /// <summary>
-        /// Dont save into a file
-        /// </summary>
-        [Description("DontSave")]
-        DontSave,
-        /// <summary>
-        /// Saves at the moment
-        /// </summary>
-        [Description("Standart")]
-        Standart,
-        /// <summary>
-        /// Stores in buffer memory and when there is enough content - save it.
-        /// </summary>
-        [Description("BufferMemory")]
-        BufferMemory
-    }
-
-    internal enum LogType
+    public enum LogType
     {
         /// <summary>
         /// TRACE level: This should be used during development to track bugs, but never committed to your VCS.
