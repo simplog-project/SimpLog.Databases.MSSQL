@@ -1,6 +1,7 @@
 ﻿using SimpLog.Databases.MSSQL.Models.AppSettings;
 using System.Data.SqlClient;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SimpLog.Databases.MSSQL.Services.DatabaseServices
 {
@@ -13,43 +14,41 @@ namespace SimpLog.Databases.MSSQL.Services.DatabaseServices
         /// </summary>
         /// <param name="connection"></param>
         /// <param name="cmd"></param>
-        public static void CreateMSSqlIfNotExists(SqlConnection connection, SqlCommand cmd)
+        public static async Task CreateMSSqlIfNotExists(SqlConnection connection)
         {
-            StringBuilder query = new StringBuilder();
+            if(connection.State != System.Data.ConnectionState.Open) 
+                await connection.OpenAsync();
 
-            query.Append($" if object_id({"'StoreLog'"}, {"'U'"}) is null ");
-            query.Append($"    create table [StoreLog] ");
-            query.Append($"    ( ");
-            query.Append($"       [{"ID"}] int IDENTITY(1,1) PRIMARY KEY ");
-            query.Append($"      ,[{"Log_Type"}] varchar(50) ");
-            query.Append($"      ,[{"Log_Error"}] varchar(50) ");
-            query.Append($"      ,[{"Log_Created"}] varchar(50) ");
-            query.Append($"      ,[{"Log_FileName"}] varchar(50) ");
-            query.Append($"      ,[{"Log_Path"}] varchar(50) ");
-            query.Append($"      ,[{"Log_SendEmail"}] bit ");
-            query.Append($"      ,[{"Email_ID"}] int ");
-            query.Append($"      ,[{"Saved_In_Database"}] varchar(50) ");
-            query.Append($"    ) ");
+            var query = new StringBuilder();
 
-            query.Append($" if object_id({"'EmailLog'"}, {"'U'"}) is null ");
-            query.Append($"    create table [EmailLog] ");
-            query.Append($"    ( ");
-            query.Append($"       [{"ID"}] int IDENTITY(1,1) PRIMARY KEY ");
-            query.Append($"      ,[{"From_Email"}] varchar(50) ");
-            query.Append($"      ,[{"To_Email"}] varchar(50) ");
-            query.Append($"      ,[{"Bcc"}] varchar(50) ");
-            query.Append($"      ,[{"Email_Subject"}] varchar(50) ");
-            query.Append($"      ,[{"Email_Body"}] varchar(50) ");
-            query.Append($"      ,[{"Time_Sent"}] varchar(50) ");
-            query.Append($"    ) ");
+            query.Append(@"
+                IF OBJECT_ID('StoreLog','U') IS NULL
+                CREATE TABLE [StoreLog] (
+                    [ID] INT IDENTITY(1,1) PRIMARY KEY,
+                    [Log_Type] NVARCHAR(50),
+                    [Log_Error] NVARCHAR(MAX),
+                    [Log_Created] DATETIME2,
+                    [Log_FileName] NVARCHAR(255),
+                    [Log_Path] NVARCHAR(500),
+                    [Log_SendEmail] BIT,
+                    [Email_ID] INT,
+                    [Saved_In_Database] BIT
+                );
 
-            connection.Open();
+                IF OBJECT_ID('EmailLog','U') IS NULL
+                CREATE TABLE [EmailLog] (
+                    [ID] INT IDENTITY(1,1) PRIMARY KEY,
+                    [From_Email] NVARCHAR(255),
+                    [To_Email] NVARCHAR(255),
+                    [Bcc] NVARCHAR(255),
+                    [Email_Subject] NVARCHAR(255),
+                    [Email_Body] NVARCHAR(MAX),
+                    [Time_Sent] DATETIME2
+                );");
 
-            cmd.CommandText = query.ToString();
-            cmd.ExecuteNonQuery();
+            using var cmd = new SqlCommand(query.ToString(), connection);
             
-            connection.Close();
+            await cmd.ExecuteNonQueryAsync();
         }
-
     }
 }

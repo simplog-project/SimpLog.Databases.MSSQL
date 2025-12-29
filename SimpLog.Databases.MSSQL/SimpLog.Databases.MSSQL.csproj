@@ -6,15 +6,15 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>SimpLog.Database.MSSQL</PackageId>
     <Title>SimpLog.Databases.MSSQL</Title>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Georgi Chekanov</Authors>
     <Company>Georgi Chekanov</Company>
     <Product>SimpLog</Product>
-    <Description>Log from server into MSSQL database.</Description>
-    <Copyright>Copyright (c) Georgi Chekanov 2024</Copyright>
+    <Description>SimpLog.Databases.MSSQL is a lightweight .NET logging library that allows applications to log messages directly into Microsoft SQL Server. It supports multiple log levels (Trace, Debug, Info, Notice, Warn, Error, Fatal) and automatically manages database tables if they don’t exist. Fully configurable and easy to integrate in .NET applications.</Description>
+    <Copyright>Copyright (c) Georgi Chekanov 2025</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageTags>log, mssql log, simple log</PackageTags>
-    <PackageReleaseNotes>- separated functionality for logging into MSSQL database</PackageReleaseNotes>
+    <PackageTags>logging, database, mssql, sqlserver, log, dotnet,</PackageTags>
+    <PackageReleaseNotes>- optimisation of the library</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/simplog-project/SimpLog.Databases.MSSQL</RepositoryUrl>

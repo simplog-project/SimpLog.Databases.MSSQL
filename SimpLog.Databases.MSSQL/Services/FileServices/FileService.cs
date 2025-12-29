@@ -1,6 +1,8 @@
 ﻿using SimpLog.Databases.MSSQL.Entities;
 using SimpLog.Databases.MSSQL.Models;
+using SimpLog.Databases.MSSQL.Models.AppSettings;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Security.AccessControl;
 using System.Text;
@@ -14,45 +16,37 @@ namespace SimpLog.Databases.MSSQL.Services.FileServices
         /// <summary>
         /// FullPath + FileName is the key and value is what should be saved into the log
         /// </summary>
-        public static Dictionary<string, StringBuilder> Logs = new Dictionary<string, StringBuilder>();
+        internal static ConcurrentDictionary<string, StringBuilder> Logs = new ();
 
-        public static Models.AppSettings.Configuration configuration = ConfigurationServices.ConfigService.BindConfigObject();
+        internal static readonly Configuration configuration = ConfigurationServices.ConfigService.CurrentConfiguration;
 
-        internal readonly bool? _Trace_Db = (configuration.LogType.Trace.SaveInDatabase == null) ? true : Convert.ToBoolean(configuration.LogType.Trace.SaveInDatabase);
-        internal readonly bool? _Debug_Db = (configuration.LogType.Debug.SaveInDatabase == null) ? true : Convert.ToBoolean(configuration.LogType.Debug.SaveInDatabase);
-        internal readonly bool? _Info_Db = (configuration.LogType.Info.SaveInDatabase == null) ? true : Convert.ToBoolean(configuration.LogType.Info.SaveInDatabase);
-        internal readonly bool? _Notice_Db = (configuration.LogType.Notice.SaveInDatabase == null) ? true : Convert.ToBoolean(configuration.LogType.Notice.SaveInDatabase);
-        internal readonly bool? _Warn_Db = (configuration.LogType.Warn.SaveInDatabase == null) ? true : Convert.ToBoolean(configuration.LogType.Warn.SaveInDatabase);
-        internal readonly bool? _Error_Db = (configuration.LogType.Error.SaveInDatabase == null) ? true : Convert.ToBoolean(configuration.LogType.Error.SaveInDatabase);
-        internal readonly bool? _Fatal_Db = (configuration.LogType.Fatal.SaveInDatabase == null) ? true : Convert.ToBoolean(configuration.LogType.Fatal.SaveInDatabase);
+        private static bool GetLogTypeEnabled(bool? value) => value ?? true;
+
+        internal readonly bool _Trace_Db = GetLogTypeEnabled(configuration.LogType.Trace.SaveInDatabase);
+        internal readonly bool _Debug_Db = GetLogTypeEnabled(configuration.LogType.Debug.SaveInDatabase);
+        internal readonly bool _Info_Db = GetLogTypeEnabled(configuration.LogType.Info.SaveInDatabase);
+        internal readonly bool _Notice_Db = GetLogTypeEnabled(configuration.LogType.Notice.SaveInDatabase);
+        internal readonly bool _Warn_Db = GetLogTypeEnabled(configuration.LogType.Warn.SaveInDatabase);
+        internal readonly bool _Error_Db = GetLogTypeEnabled(configuration.LogType.Error.SaveInDatabase);
+        internal readonly bool _Fatal_Db = GetLogTypeEnabled(configuration.LogType.Fatal.SaveInDatabase);
+
+        private static readonly Dictionary<LogType, bool> _dbLogEnabledByType = new()
+        {
+            { LogType.Trace,  configuration.LogType.Trace.SaveInDatabase ?? true },
+            { LogType.Debug,  configuration.LogType.Debug.SaveInDatabase ?? true },
+            { LogType.Info,   configuration.LogType.Info.SaveInDatabase ?? true },
+            { LogType.Notice, configuration.LogType.Notice.SaveInDatabase ?? true },
+            { LogType.Warn,   configuration.LogType.Warn.SaveInDatabase ?? true },
+            { LogType.Error,  configuration.LogType.Error.SaveInDatabase ?? true },
+            { LogType.Fatal,  configuration.LogType.Fatal.SaveInDatabase ?? true }
+        };
 
         /// <summary>
         /// Converts message type from enum to string.
         /// </summary>
         /// <param name="logType"></param>
         /// <returns></returns>
-        internal string MessageType(LogType logType)
-        {
-            switch (logType)
-            {
-                case LogType.Trace:
-                    return LogType_Trace;
-                case LogType.Debug:
-                    return LogType_Debug;
-                case LogType.Info:
-                    return LogType_Info;
-                case LogType.Notice:
-                    return LogType_Notice;
-                case LogType.Warn:
-                    return LogType_Warn;
-                case LogType.Error:
-                    return LogType_Error;
-                case LogType.Fatal:
-                    return LogType_Fatal;
-                default:
-                    return LogType_NoType;
-            }
-        }
+        internal string MessageType(LogType logType) => logType.ToLabel();
 
         /// <summary>
         /// Distributes what type of save is it configured. File, Email of Database.
@@ -64,18 +58,20 @@ namespace SimpLog.Databases.MSSQL.Services.FileServices
         internal async Task Save(
             string message, 
             LogType logType, 
-            bool? saveInDatabase,
-            string? saveType,
-            bool? isSentEmail,
-            string? path_to_save_log,
-            string? log_file_name)
+            bool? saveInDatabase = null,
+            string? saveType = null,
+            bool? isSentEmail = null,
+            string? path_to_save_log = null,
+            string? log_file_name = null)
         {
             try
             {
                 //  Send into a database
                 if (ShouldSaveInDb(saveInDatabase, logType))
-                    DatabaseServices.DatabaseServices.SaveIntoDatabase(
+                {
+                    await DatabaseServices.DatabaseServices.SaveIntoDatabase(
                         storeLog(message, isSentEmail, logType, saveInDatabase, saveType, path_to_save_log, log_file_name));
+                }
             }
             catch(Exception ex)
             {
@@ -93,59 +89,16 @@ namespace SimpLog.Databases.MSSQL.Services.FileServices
         internal bool ShouldSaveInDb(bool? saveInDatabase, LogType logType)
         {
             //  Check if the db log is active at global level.
-            if(saveInDatabase is false ||
-                (configuration.Database_Configuration.Global_Enabled_Save is not null && 
-                configuration.Database_Configuration.Global_Enabled_Save is false) ||
-                configuration.Database_Configuration.Connection_String is null)
+            if(saveInDatabase is false)
                 return false;
 
-            switch (logType)
-            {
-                case LogType.Trace:
-                    {
-                        if (_Trace_Db is not null && _Trace_Db is false)
-                            return false;
-                        break;
-                    }
-                case LogType.Debug:
-                    {
-                        if (_Debug_Db is not null && _Debug_Db is false)
-                            return false;
-                        break;
-                    }
-                case LogType.Info:
-                    {
-                        if (_Info_Db is not null && _Info_Db is false)
-                            return false;
-                        break;
-                    }
-                case LogType.Notice:
-                    {
-                        if (_Notice_Db is not null && _Notice_Db is false)
-                            return false;
-                        break;
-                    }
-                case LogType.Warn:
-                    {
-                        if (_Warn_Db is not null && _Warn_Db is false)
-                            return false;
-                        break;
-                    }
-                case LogType.Error:
-                    {
-                        if (_Error_Db is not null && _Error_Db is false)
-                            return false;
-                        break;
-                    }
-                case LogType.Fatal:
-                    {
-                        if (_Fatal_Db is not null && _Fatal_Db is false)
-                            return false;
-                        break;
-                    }
-            }
+            var dbConfig = configuration.Database_Configuration;
 
-            return true;
+            if (dbConfig?.Global_Enabled_Save == false ||
+                string.IsNullOrWhiteSpace(dbConfig?.Connection_String))
+                return false;
+
+            return _dbLogEnabledByType.TryGetValue(logType, out var enabled) && enabled;
         }
 
         /// <summary>
